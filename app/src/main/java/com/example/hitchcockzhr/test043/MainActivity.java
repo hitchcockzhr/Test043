@@ -2,9 +2,12 @@ package com.example.hitchcockzhr.test043;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,11 +16,27 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Button button, button2, button3, button4;
+    Button button5, button6, button7, button8;
     boolean isExit;
     Handler mHandler;
     ProgressDialog m_pDialog;
+
+    private MyService.MyBinder myBinder;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            myBinder = (MyService.MyBinder) service;
+            myBinder.startDownload();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
         button2 = (Button)findViewById(R.id.button2);
         button3= (Button)findViewById(R.id.button3) ;
         button4= (Button)findViewById(R.id.button4) ;
+
+        button5 = (Button)findViewById(R.id.button5);
+        button6 = (Button)findViewById(R.id.button6);
+        button7= (Button)findViewById(R.id.button7) ;
+        button8= (Button)findViewById(R.id.button8) ;
+
         m_pDialog = new ProgressDialog(MainActivity.this);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,7 +104,39 @@ public class MainActivity extends AppCompatActivity {
                 m_pDialog.hide();
             }
         });
+
+        button5.setOnClickListener(this);
+        button6.setOnClickListener(this);
+        button7.setOnClickListener(this);
+        button8.setOnClickListener(this);
+
+
+
     }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.button5:
+                Intent startIntent = new Intent(this, MyService.class);
+                startService(startIntent);
+                break;
+            case R.id.button8:
+                Intent stopIntent = new Intent(this, MyService.class);
+                stopService(stopIntent);
+                break;
+            case R.id.button6:
+                Intent bindIntent = new Intent(this, MyService.class);
+                bindService(bindIntent, connection, BIND_AUTO_CREATE);
+                break;
+            case R.id.button7:
+                unbindService(connection);
+                break;
+            default:
+                break;
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
